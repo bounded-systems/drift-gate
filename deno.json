@@ -6,6 +6,7 @@
     ".": "./mod.ts",
     "./cli": "./cli.ts"
   },
+  "nodeModulesDir": "auto",
   "imports": {
     "ts-morph": "npm:ts-morph@^23",
     "verbspec": "jsr:@bounded-systems/verbspec@^0.3.1",
