@@ -41,13 +41,19 @@ drift check --entry ./mod.ts --golden .drift/surface.json
 drift surface    --entry ./mod.ts                          # print a module's surface as JSON
 drift update     --entry ./mod.ts --golden .drift/surface.json   # (re)write the golden
 drift check      --entry ./mod.ts --golden .drift/surface.json   # exit 1 on surface drift
+drift check      --entry ./mod.ts --golden .drift/surface.json --fix   # accept the drift (regenerate the golden)
 drift descriptor --root .                                   # proof-claim honesty (skipped if N/A)
-drift gate       --root . --entry mod.ts --golden .drift/surface.json   # every applicable check
+drift gate       --root . --entry mod.ts --golden .drift/surface.json [--fix]   # every applicable check
 ```
 
-`check` / `gate` exit non-zero on drift, so they drop straight into CI. The verb
-registry is defined with [verbspec](https://jsr.io/@bounded-systems/verbspec), so
-the same commands project to MCP / OpenAPI for free.
+`check` / `gate` exit non-zero on drift, so they drop straight into CI. Add
+**`--fix`** to *analyze → report → remediate* in one step (eslint-style): the
+drift is printed, then the golden is regenerated to accept the new surface (exit
+0). `--fix` only auto-accepts **surface** drift; **descriptor** drift (stale
+README pins) is reported, not silently rewritten — it needs re-pinning at the
+source. The verb registry is defined with
+[verbspec](https://jsr.io/@bounded-systems/verbspec), so the same commands project
+to MCP / OpenAPI for free.
 
 ## Reproducibility
 

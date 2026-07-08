@@ -25,7 +25,8 @@ function usage(): string {
     `  ${BIN} surface --entry ./mod.ts`,
     `  ${BIN} update  --entry ./mod.ts --golden .drift/surface.json`,
     `  ${BIN} check   --entry ./mod.ts --golden .drift/surface.json`,
-    `  ${BIN} gate    --root . --entry mod.ts --golden .drift/surface.json`,
+    `  ${BIN} check   --entry ./mod.ts --golden .drift/surface.json --fix   # accept the drift`,
+    `  ${BIN} gate    --root . --entry mod.ts --golden .drift/surface.json --fix`,
   );
   return lines.join("\n");
 }

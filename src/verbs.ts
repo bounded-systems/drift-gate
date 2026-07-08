@@ -33,17 +33,36 @@ const surfaceVerb = defineVerb({
 const checkVerb = defineVerb({
   id: "check",
   summary:
-    "Diff a module's surface against a golden. ok=false (exit 1) on drift.",
+    "Diff a module's surface against a golden. ok=false (exit 1) on drift; --fix regenerates the golden to accept it.",
   actor: "drift-gate",
-  input: z.object({ entry: z.string(), golden: z.string() }),
+  input: z.object({
+    entry: z.string(),
+    golden: z.string(),
+    fix: z.boolean().optional(),
+  }),
   output: z.object({
     ok: z.boolean(),
+    fixed: z.boolean(),
     failures: z.array(z.string()),
     notes: z.array(z.string()),
   }),
-  run: async ({ entry, golden }: { entry: string; golden: string }) => {
+  run: async (
+    { entry, golden, fix }: { entry: string; golden: string; fix?: boolean },
+  ) => {
     const r = await checkSurface(entry, golden);
-    return { ok: r.ok, failures: r.failures, notes: r.notes };
+    if (!r.ok && fix) {
+      const g = await writeGolden(golden, entry);
+      return {
+        ok: true,
+        fixed: true,
+        failures: r.failures,
+        notes: [
+          `--fix: regenerated ${golden} (${g.symbols.length} symbols) to accept the drift above`,
+          ...r.notes,
+        ],
+      };
+    }
+    return { ok: r.ok, fixed: false, failures: r.failures, notes: r.notes };
   },
 });
 
@@ -96,7 +115,7 @@ const descriptorVerb = defineVerb({
 const gateVerb = defineVerb({
   id: "gate",
   summary:
-    "Run every applicable check for a repo (descriptor + surface). ok=false (exit 1) on any drift.",
+    "Run every applicable check for a repo (descriptor + surface). ok=false (exit 1) on any drift; --fix regenerates the surface golden.",
   actor: "drift-gate",
   input: z.object({
     root: z.string(),
@@ -104,9 +123,11 @@ const gateVerb = defineVerb({
     golden: z.string().optional(),
     trellis: z.string().optional(),
     readme: z.string().optional(),
+    fix: z.boolean().optional(),
   }),
   output: z.object({
     ok: z.boolean(),
+    fixed: z.boolean(),
     checks: z.array(z.object({
       name: z.string(),
       ok: z.boolean(),
@@ -122,11 +143,32 @@ const gateVerb = defineVerb({
       golden?: string;
       trellis?: string;
       readme?: string;
+      fix?: boolean;
     },
   ) => {
-    const rs = await runGate(i);
+    const { fix, ...opts } = i;
+    const root = opts.root.replace(/\/+$/, "");
+    let rs = await runGate(opts);
+    let fixed = false;
+
+    // --fix only auto-accepts SURFACE drift (regenerate the golden). Descriptor
+    // drift (stale README pins) needs re-pinning by descriptor-kit and is left
+    // as a failure with a note, not silently rewritten.
+    if (fix && opts.entry && opts.golden) {
+      const surface = rs.find((r) => r.name === "surface");
+      if (surface && !surface.ok) {
+        const goldenPath = opts.golden.startsWith("/")
+          ? opts.golden
+          : `${root}/${opts.golden}`;
+        await writeGolden(goldenPath, `${root}/${opts.entry}`);
+        fixed = true;
+        rs = await runGate(opts); // re-check so the report reflects the fix
+      }
+    }
+
     return {
       ok: rs.every((r) => r.ok),
+      fixed,
       checks: rs.map((r) => ({
         name: r.name,
         ok: r.ok,
