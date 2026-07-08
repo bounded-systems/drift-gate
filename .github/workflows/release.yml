@@ -1,37 +1,21 @@
 name: release
-# Build the standalone `drift` binary for each platform and attach it to the
-# GitHub release for the tag. Uses `deno compile` cross-targeting from Linux.
+
+# Release provenance via the bounded-systems mint capability. On a v<version> tag
+# (cut by `mint release`), emits the deterministic in-toto release Statement
+# (tag → version plan → commit), keyless-signs it (cosign/OIDC), and attaches it
+# to the GitHub release. The JSR publish stays in publish-jsr.yml and the
+# platform binaries in binaries.yml; this job owns VERSION + TAG provenance only.
+# Pinned to an immutable mint commit SHA; bump when mint tags.
 on:
   push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    tags: ["v*"]
+
 permissions:
-  contents: write # create the release + upload assets
+  contents: write # create / upload to the GitHub release
+  id-token: write # OIDC — cosign keyless signing
+
 jobs:
-  binaries:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
-        with:
-          deno-version: v2.x
-      - name: compile binaries
-        run: |
-          set -eu
-          mkdir -p dist
-          perms="--allow-read --allow-write --allow-env --allow-sys"
-          for t in \
-            x86_64-unknown-linux-gnu \
-            aarch64-unknown-linux-gnu \
-            x86_64-apple-darwin \
-            aarch64-apple-darwin \
-            x86_64-pc-windows-msvc; do
-            out="dist/drift-$t"
-            [ "$t" = "x86_64-pc-windows-msvc" ] && out="$out.exe"
-            echo "compiling $t"
-            deno compile $perms --target "$t" --output "$out" cli.ts
-          done
-          ls -lh dist
-      - name: publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" dist/* --generate-notes --title "${{ github.ref_name }}"
+  release:
+    uses: bounded-systems/mint/.github/workflows/release-provenance.yml@v0.3.1 # mint
+    with:
+      ref: v0.3.1

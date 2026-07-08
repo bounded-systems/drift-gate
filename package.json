@@ -1,0 +1,24 @@
+{
+  "name": "@bounded-systems/drift-gate",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Surface & descriptor drift gate for TS/JS repos — library, verbspec CLI, and standalone binary.",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "author": "Robert DeLanghe (https://github.com/bdelanghe)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bounded-systems/drift-gate.git"
+  },
+  "exports": {
+    ".": "./mod.ts",
+    "./cli": "./cli.ts"
+  },
+  "bounded": {
+    "tagline": "Surface & descriptor drift gate for TS/JS repos",
+    "kind": "gate",
+    "facet": "verb",
+    "role": "conformance",
+    "domain": "conformance"
+  }
+}
