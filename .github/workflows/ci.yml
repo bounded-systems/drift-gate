@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  deno:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        with:
+          deno-version: v2.x
+      - run: deno task check
+      - run: deno lint
+      - run: deno fmt --check
+      - run: deno task test
+      # Dogfood: drift-gate gates its own exported surface.
+      - run: deno task drift check --entry mod.ts --golden .drift/surface.json
+      - run: npx jsr publish --dry-run

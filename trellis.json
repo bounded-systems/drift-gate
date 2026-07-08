@@ -1,0 +1,14 @@
+{
+  "node": "drift-gate",
+  "visibility": "public",
+  "role": "surface-descriptor-drift-gate",
+  "domain": "conformance",
+  "provides": [
+    {
+      "type": "drift-gate",
+      "kind": "import-boundary",
+      "spec": { "jsrSchema": "@bounded-systems/drift-gate" }
+    }
+  ],
+  "consumes": []
+}

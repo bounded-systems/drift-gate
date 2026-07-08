@@ -1,0 +1,116 @@
+{
+  "_generated": {
+    "by": "drift-gate surface:update",
+    "tsMorph": "ts-morph",
+    "typescript": "5.5.2",
+    "note": "Regenerate on an intentional surface change; commit the diff. Pin the toolchain (typescript version) to keep the projection reproducible."
+  },
+  "module": "mod.ts",
+  "symbols": [
+    {
+      "name": "checkDescriptor",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof checkDescriptor"
+    },
+    {
+      "name": "CheckResult",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { failures: string[]; name: string; notes: string[]; ok: boolean; skipped?: boolean | undefined }"
+    },
+    {
+      "name": "checkSurface",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof checkSurface"
+    },
+    {
+      "name": "Claim",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { claim: string; provenBy: string; via: string }"
+    },
+    {
+      "name": "DescriptorOptions",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { readme?: string | undefined; root: string; trellis?: string | undefined }"
+    },
+    {
+      "name": "diffSurface",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof diffSurface"
+    },
+    {
+      "name": "extractSurface",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof extractSurface"
+    },
+    {
+      "name": "GateOptions",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { entry?: string | undefined; golden?: string | undefined; readme?: string | undefined; root: string; trellis?: string | undefined }"
+    },
+    {
+      "name": "gitBlobHash",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof gitBlobHash"
+    },
+    {
+      "name": "Golden",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { _generated: { by: string; tsMorph: string; typescript: string; repoRev?: string; note: string; }; module: string; symbols: SymbolEntry[] }"
+    },
+    {
+      "name": "normalizeType",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof normalizeType"
+    },
+    {
+      "name": "parseReadmeClaimsTable",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof parseReadmeClaimsTable"
+    },
+    {
+      "name": "PinRow",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { pin: string; provenBy: string }"
+    },
+    {
+      "name": "readGolden",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof readGolden"
+    },
+    {
+      "name": "readTrellisClaims",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof readTrellisClaims"
+    },
+    {
+      "name": "runGate",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof runGate"
+    },
+    {
+      "name": "Surface",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { module: string; symbols: SymbolEntry[] }"
+    },
+    {
+      "name": "SymbolEntry",
+      "kind": "InterfaceDeclaration",
+      "signature": "interface { kind: string; name: string; signature: string }"
+    },
+    {
+      "name": "toolVersions",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof toolVersions"
+    },
+    {
+      "name": "VERBS",
+      "kind": "VariableDeclaration",
+      "signature": "Registry"
+    },
+    {
+      "name": "writeGolden",
+      "kind": "FunctionDeclaration",
+      "signature": "typeof writeGolden"
+    }
+  ]
+}
