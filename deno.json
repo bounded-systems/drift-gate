@@ -8,7 +8,7 @@
   },
   "nodeModulesDir": "auto",
   "imports": {
-    "ts-morph": "npm:ts-morph@^23",
+    "ts-morph": "npm:ts-morph@^28",
     "verbspec": "jsr:@bounded-systems/verbspec@^0.3.1",
     "zod": "npm:zod@^4.4.3",
     "@std/assert": "jsr:@std/assert@^1"

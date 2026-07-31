@@ -2,7 +2,7 @@
   "_generated": {
     "by": "drift-gate surface:update",
     "tsMorph": "ts-morph",
-    "typescript": "5.5.2",
+    "typescript": "6.0.2",
     "note": "Regenerate on an intentional surface change; commit the diff. Pin the toolchain (typescript version) to keep the projection reproducible."
   },
   "module": "mod.ts",
