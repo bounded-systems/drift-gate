@@ -25,14 +25,16 @@
     "include": [
       "src/",
       "mod.ts",
-      "cli.ts"
+      "cli.ts",
+      "release_workflow_test.ts"
     ]
   },
   "lint": {
     "include": [
       "src/",
       "mod.ts",
-      "cli.ts"
+      "cli.ts",
+      "release_workflow_test.ts"
     ]
   },
   "publish": {
