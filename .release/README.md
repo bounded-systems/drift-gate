@@ -13,5 +13,9 @@ Format — `.release/<slug>.md`:
 
 The `version` CI job runs `mint plan`, which validates every intent and previews
 the next version. On a `v<version>` tag cut by `mint release`, `release.yml`
-emits signed in-toto provenance, `publish-jsr.yml` publishes to JSR, and
-`binaries.yml` attaches the compiled `drift` binaries.
+compiles the `drift` binaries, emits signed in-toto provenance, and attaches both
+to the GitHub release; `publish-jsr.yml` publishes to JSR.
+
+The binaries are built inside `release.yml` rather than in a workflow of their own
+on purpose: a published GitHub release is immutable, so a second tag-triggered
+workflow racing for the same release loses and its assets never attach (#5).

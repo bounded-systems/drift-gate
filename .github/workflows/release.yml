@@ -1,21 +1,94 @@
 name: release
 
-# Release provenance via the bounded-systems mint capability. On a v<version> tag
-# (cut by `mint release`), emits the deterministic in-toto release Statement
-# (tag → version plan → commit), keyless-signs it (cosign/OIDC), and attaches it
-# to the GitHub release. The JSR publish stays in publish-jsr.yml and the
-# platform binaries in binaries.yml; this job owns VERSION + TAG provenance only.
-# Pinned to an immutable mint commit SHA; bump when mint tags.
+# Release provenance + platform binaries via the bounded-systems mint capability.
+# On a v<version> tag (cut by `mint release`), this compiles the standalone `drift`
+# binaries, emits the deterministic in-toto release Statement (tag → version plan →
+# commit), keyless-signs it (cosign/OIDC), and attaches BOTH to the GitHub release.
+# The JSR publish stays in publish-jsr.yml.
+#
+# ── Why the binaries are built HERE and not in their own workflow (#5) ────────
+# A *published* GitHub release is immutable, so whichever workflow publishes it
+# first locks every other one out. The binaries used to live in a separate
+# `binaries.yml` triggered by the same tag, and two tag-triggered workflows are
+# unordered by construction — so mint's release job published the release before
+# `binaries.yml` could attach, and the upload died with
+#
+#     HTTP 422: Cannot upload assets to an immutable release.
+#
+# That is how v0.2.0 and v0.3.0 both shipped with no binaries. Both workflows were
+# written create-or-upload to be "order-independent", which is correct for mutable
+# releases and precisely wrong for immutable ones — order-independence is what puts
+# the publish first half the time.
+#
+# The fix is one writer: `binaries` builds and uploads a workflow artifact, the
+# release job downloads it (same run, so `assets-artifact` can reach it), attaches
+# it alongside the provenance, and publishes ONCE. Nothing races for the release.
+# Keep it that way — do not add a second tag-triggered workflow that writes release
+# assets. `release_workflow_test.ts` asserts this shape.
 on:
   push:
     tags: ["v*"]
 
+# Least privilege by default; only the release job writes anything.
 permissions:
-  contents: write # create / upload to the GitHub release
-  id-token: write # OIDC — cosign keyless signing
+  contents: read
 
 jobs:
+  # Build the standalone `drift` binary for each platform, via `deno compile`
+  # cross-targeting from Linux. Uploads rather than attaches — the release job is
+  # the single writer to the GitHub release.
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        with:
+          deno-version: v2.x
+      - name: compile binaries
+        run: |
+          set -eu
+          mkdir -p dist
+          perms="--allow-read --allow-write --allow-env --allow-sys"
+          for t in \
+            x86_64-unknown-linux-gnu \
+            aarch64-unknown-linux-gnu \
+            x86_64-apple-darwin \
+            aarch64-apple-darwin \
+            x86_64-pc-windows-msvc; do
+            out="dist/drift-$t"
+            [ "$t" = "x86_64-pc-windows-msvc" ] && out="$out.exe"
+            echo "compiling $t"
+            deno compile $perms --target "$t" --output "$out" cli.ts
+          done
+          ls -lh dist
+      # if-no-files-found: error — a silent miss here would ship a release with no
+      # binaries, which is the whole failure #5 is about. Fail the tag instead.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-binaries
+          path: dist/*
+          if-no-files-found: error
+
   release:
-    uses: bounded-systems/mint/.github/workflows/release-provenance.yml@v0.3.1 # mint
+    needs: binaries # the assets must exist before the release job attaches them
+    # Scoped here rather than at the workflow level so the `binaries` job stays
+    # read-only. A called workflow only ever gets the intersection with its
+    # caller's grants, so `actions: read` has to be declared here for mint's
+    # `gh run download` to see this run's artifact.
+    permissions:
+      contents: write # create / upload to the GitHub release
+      id-token: write # OIDC — cosign keyless signing
+      actions: read # download the release-binaries artifact from this run
+    # Pinned to an immutable mint commit SHA. This is mint main at #30, the commit
+    # that made release-provenance create the release as a draft and publish it
+    # only once assets are attached — the fix this caller depends on. No mint tag
+    # contains it yet (v0.5.0 predates it); re-pin to that tag once it is cut.
+    #
+    # `ref` deliberately stays at v0.3.1: it selects the mint code that RUNS
+    # (`mint attest`), and this change is about the workflow's ordering, not about
+    # moving drift-gate's provenance onto three minors of unrelated mint changes.
+    # version.yml is on v0.3.1 too. Bump both together when mint tags.
+    uses: bounded-systems/mint/.github/workflows/release-provenance.yml@576e904b3562f290c4d4728c40766b52eb181c4e # mint main @ #30
     with:
       ref: v0.3.1
+      assets-artifact: release-binaries
