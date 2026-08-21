@@ -72,4 +72,4 @@ codebase.
 
 ## License
 
-[PolyForm Noncommercial License 1.0.0](LICENSE).
+[MIT License](LICENSE).
