@@ -88,7 +88,7 @@ jobs:
     # (`mint attest`), and this change is about the workflow's ordering, not about
     # moving drift-gate's provenance onto three minors of unrelated mint changes.
     # version.yml is on v0.3.1 too. Bump both together when mint tags.
-    uses: bounded-systems/mint/.github/workflows/release-provenance.yml@01d32beb0827adf53feeb18f58d4b2e40e56b37a # mint main @ #30
+    uses: bounded-systems/mint/.github/workflows/release-provenance.yml@24123b15eb63c6c3b59ca1b61a17c98130afd62b # mint main @ #30
     with:
       ref: v0.3.1
       assets-artifact: release-binaries
